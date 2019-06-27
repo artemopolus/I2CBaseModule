@@ -1,0 +1,10 @@
+/Debug
+/Drivers
+/Startup
+*.metadata
+*.settings
+*.cproject
+*.mxproject
+*.project
+*.elf.launch
+*.ld
