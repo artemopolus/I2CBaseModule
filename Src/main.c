@@ -55,7 +55,7 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 
 __IO uint8_t TargetI2Cdevice = 0xff;
- uint8_t ptI2Cbuffer2transmit[] = {0,1,2,3};
+ uint8_t ptI2Cbuffer2transmit[] = {0,2,0,0};
 
 /* USER CODE END PV */
 
@@ -114,9 +114,9 @@ int main(void)
 
   /* здесь происходит опрос портов*/
 
-  for (uint8_t i = 0; i < 127; i++)
+  for (uint16_t i = 1; i < 127; i++)
   {
-	  if(HAL_I2C_IsDeviceReady(&hi2c2,i,1000,0) == HAL_OK)
+	  if(HAL_I2C_IsDeviceReady(&hi2c2,(i<<1),1000,0) == HAL_OK)
 		  TargetI2Cdevice = i;
 	  else
 		  __NOP();
