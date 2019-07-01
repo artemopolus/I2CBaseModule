@@ -114,17 +114,11 @@ int main(void)
 
   /* здесь происходит опрос портов*/
 
-<<<<<<< HEAD
-  for (uint8_t i = 1; i < 127; i++)
-  {
-	  if(HAL_I2C_IsDeviceReady(&hi2c2,i,1000,0) == HAL_OK)
-=======
 
-
-  for (uint8_t i = 0x10; i < 127; i++)
+  for (uint16_t i = 0x01; i < 127; i++)
   {
-	  if(HAL_I2C_IsDeviceReady(&hi2c2,i,1,100) == HAL_OK)
->>>>>>> 2723288e58aa751c7cf0215e7cd0f5bb3cc130a6
+	  if(HAL_I2C_IsDeviceReady(&hi2c2,(i<<1),1,100) == HAL_OK)
+
 		  TargetI2Cdevice = i;
 	  else
 		  __NOP();
