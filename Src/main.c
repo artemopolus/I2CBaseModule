@@ -36,6 +36,9 @@
 
 #define I2C_RECEIVE_CNT	(uint16_t)390
 
+#define I2C_mode
+#define UART_mode
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,6 +60,7 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 
 __IO uint8_t TargetI2Cdevice = 0xff;
+__IO uint8_t I2Cflag = 0x00;
 uint8_t ptI2Cbuffer2transmit[] = {0,2,0,0};
 uint8_t ptI2Cbuffer4receive[I2C_RECEIVE_CNT] = {0};
 
@@ -71,6 +75,8 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 /* USER CODE BEGIN PFP */
+
+static void UartsendMessage(uint8_t * msg, uint16_t cnt);
 
 /* USER CODE END PFP */
 
@@ -116,8 +122,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   /* здесь происходит опрос портов*/
+#ifdef UART_mode
+  HAL_UART_Transmit(&huart2, (uint8_t*)"Hello", 5, 10);
+#endif
 
-
+#ifdef I2C_mode
   for (uint16_t i = 0x00; i < 127; i++)
   {
 	  if(HAL_I2C_IsDeviceReady(&hi2c2,(i<<1),1,100) == HAL_OK)
@@ -127,20 +136,43 @@ int main(void)
   }
   if(TargetI2Cdevice != 0xff)
   {
+	  UartsendMessage((uint8_t*)"Get trg\n", 8);
 	  HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10);
 
 	  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, 10);
 	  __NOP();
   }
+#endif
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+#ifdef I2C_mode
+  if(TargetI2Cdevice != 0xff)
+  {
+	  UartsendMessage((uint8_t*)"Set \n", 8);
+	  ptI2Cbuffer2transmit[3] = 0x01;
+	  if(HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10) == HAL_OK)
+		  I2Cflag = 0x01;
+  }
+#endif
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+#ifdef I2C_mode
+	  if(I2Cflag)
+	  {
+		  uint32_t time = HAL_GetTick();
+		  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, 10);
+		  UartsendMessage(ptI2Cbuffer4receive, I2C_RECEIVE_CNT);
+		  time = HAL_GetTick() - time;
+		  HAL_Delay(1000 - time);
+	  }
+#endif
   }
   /* USER CODE END 3 */
 }
@@ -456,6 +488,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+static void UartsendMessage(uint8_t * msg, uint16_t cnt)
+{
+	HAL_UART_Transmit(&huart2, msg, cnt, 10);
+}
 
 /* USER CODE END 4 */
 
