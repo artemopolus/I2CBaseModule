@@ -34,7 +34,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define I2C_RECEIVE_CNT	(uint16_t)390
+#define I2C_RECEIVE_CNT	(uint16_t)380
 
 #define I2C_mode
 #define UART_mode
@@ -152,10 +152,12 @@ int main(void)
 #ifdef I2C_mode
   if(TargetI2Cdevice != 0xff)
   {
-	  UartsendMessage((uint8_t*)"Set \n", 8);
 	  ptI2Cbuffer2transmit[3] = 0x01;
 	  if(HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10) == HAL_OK)
+	  {
 		  I2Cflag = 0x01;
+		  UartsendMessage((uint8_t*)"Set str\n", 8);
+	  }
   }
 #endif
   while (1)
@@ -169,6 +171,7 @@ int main(void)
 		  uint32_t time = HAL_GetTick();
 		  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, 10);
 		  UartsendMessage(ptI2Cbuffer4receive, I2C_RECEIVE_CNT);
+		  UartsendMessage((uint8_t*)"\n", 1);
 		  time = HAL_GetTick() - time;
 		  HAL_Delay(1000 - time);
 	  }
