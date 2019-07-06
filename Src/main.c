@@ -70,7 +70,7 @@ __IO uint8_t I2Cflag = 0x00;
 uint8_t ptI2Cbuffer2transmit[] = {0,2,0,0};
 uint8_t ptI2Cbuffer4receive[I2C_RECEIVE_CNT] = {0};
 
-FATFS SDFatFs;
+FATFS SDFatFs = {0};
 char SDPath[4];
 uint8_t workBuffer[_MAX_SS];
 FIL MyFile;
@@ -140,7 +140,7 @@ int main(void)
   MX_I2C2_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
- // MX_USB_OTG_FS_PCD_Init();
+  MX_USB_OTG_FS_PCD_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
@@ -174,7 +174,8 @@ int main(void)
 //    if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
 //    {
       /*##-2- Register the file system object to the FatFs module ##############*/
-  	  res = f_mount(&SDFatFs, (TCHAR const*)SDPath, 0);
+  	  res = f_mount(&SDFatFs, (TCHAR const*)SDPath, 1);
+  	  //HAL_Delay(500);
       if(res != FR_OK)
       {
         /* FatFs Initialization Error */
@@ -475,6 +476,7 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.ClockDiv = 0;
   /* USER CODE BEGIN SDMMC1_Init 2 */
 
+
   HAL_StatusTypeDef status = HAL_SD_Init(&hsd1);
   if(status != HAL_OK)
     {
@@ -497,6 +499,7 @@ static void MX_SDMMC1_SD_Init(void)
 	  {
 	  	  case HAL_SD_CARD_TRANSFER:
 	  		  //transfer error
+
 	  		  __NOP();
 	  		  break;
 	  	  case HAL_SD_CARD_READY:
