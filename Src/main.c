@@ -140,7 +140,7 @@ int main(void)
   MX_I2C2_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
-  MX_USB_OTG_FS_PCD_Init();
+ // MX_USB_OTG_FS_PCD_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
@@ -169,11 +169,13 @@ int main(void)
 #endif
 
 #ifdef SD_mode
+
   /*##-1- Link the micro SD disk I/O driver ##################################*/
-    if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
-    {
+//    if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
+//    {
       /*##-2- Register the file system object to the FatFs module ##############*/
-      if(f_mount(&SDFatFs, (TCHAR const*)SDPath, 0) != FR_OK)
+  	  res = f_mount(&SDFatFs, (TCHAR const*)SDPath, 0);
+      if(res != FR_OK)
       {
         /* FatFs Initialization Error */
         Error_Handler();
@@ -182,7 +184,8 @@ int main(void)
       {
         /*##-3- Create a FAT file system (format) on the logical drive #########*/
         /* WARNING: Formatting the uSD card will delete all content on the device */
-        if(f_mkfs((TCHAR const*)SDPath, FM_ANY, 0, workBuffer, sizeof(workBuffer)) != FR_OK)
+    	  res = f_mkfs((TCHAR const*)SDPath, FM_ANY, 0, workBuffer, sizeof(workBuffer));
+        if(res != FR_OK)
         {
           /* FatFs Format Error */
           Error_Handler();
@@ -190,7 +193,8 @@ int main(void)
         else
         {
           /*##-4- Create and Open a new text file object with write access #####*/
-          if(f_open(&MyFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
+        	res = f_open(&MyFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE);
+          if(res  != FR_OK)
           {
             /* 'STM32.TXT' file Open for write Error */
             Error_Handler();
@@ -251,10 +255,10 @@ int main(void)
           }
         }
       }
-    }
-
-    /*##-11- Unlink the micro SD disk I/O driver ###############################*/
-    FATFS_UnLinkDriver(SDPath);
+//    }
+//
+//    /*##-11- Unlink the micro SD disk I/O driver ###############################*/
+//    FATFS_UnLinkDriver(SDPath);
 #endif
 
   /* USER CODE END 2 */
@@ -470,6 +474,51 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
   hsd1.Init.ClockDiv = 0;
   /* USER CODE BEGIN SDMMC1_Init 2 */
+
+  HAL_StatusTypeDef status = HAL_SD_Init(&hsd1);
+  if(status != HAL_OK)
+    {
+  	  Error_Handler();
+    }
+  HAL_SD_CardStateTypeDef statusSD = HAL_SD_GetCardState(&hsd1);
+
+  if(statusSD == 0)
+  {
+	  if(HAL_SD_GetError(&hsd1) == HAL_SD_ERROR_CMD_RSP_TIMEOUT)
+	  {
+		  __NOP();
+		  //card not insert
+	  }
+	  Error_Handler();
+  }
+  else
+  {
+	  switch(statusSD)
+	  {
+	  	  case HAL_SD_CARD_TRANSFER:
+	  		  //transfer error
+	  		  __NOP();
+	  		  break;
+	  	  case HAL_SD_CARD_READY:
+	  		  //all good
+	  		  __NOP();
+	  		  break;
+	  }
+  }
+
+  __NOP();
+//  GPIO_InitTypeDef GPIO_InitStruct = {0};
+//GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10| GPIO_PIN_11;
+//GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+//GPIO_InitStruct.Pull = GPIO_PULLUP;
+//GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+//HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+//
+//GPIO_InitStruct.Pin = GPIO_PIN_2;
+//GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+//GPIO_InitStruct.Pull = GPIO_PULLUP;
+//GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+//HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /* USER CODE END SDMMC1_Init 2 */
 
