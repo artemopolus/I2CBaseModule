@@ -476,12 +476,35 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.ClockDiv = 0;
   /* USER CODE BEGIN SDMMC1_Init 2 */
 
+  /* Enable SDIO clock */
+  __HAL_RCC_SDMMC1_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  //force init gpio
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10| GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  //
+
 
   HAL_StatusTypeDef status = HAL_SD_Init(&hsd1);
   if(status != HAL_OK)
     {
   	  Error_Handler();
     }
+  status = HAL_SD_ConfigWideBusOperation(&hsd1, SDMMC_BUS_WIDE_4B);
+  if (status != HAL_OK)
+      {
+        Error_Handler();
+      }
   HAL_SD_CardStateTypeDef statusSD = HAL_SD_GetCardState(&hsd1);
 
   if(statusSD == 0)
@@ -510,18 +533,7 @@ static void MX_SDMMC1_SD_Init(void)
   }
 
   __NOP();
-//  GPIO_InitTypeDef GPIO_InitStruct = {0};
-//GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10| GPIO_PIN_11;
-//GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-//GPIO_InitStruct.Pull = GPIO_PULLUP;
-//GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-//HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-//
-//GPIO_InitStruct.Pin = GPIO_PIN_2;
-//GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-//GPIO_InitStruct.Pull = GPIO_PULLUP;
-//GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-//HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
 
   /* USER CODE END SDMMC1_Init 2 */
 
