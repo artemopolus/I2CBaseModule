@@ -146,11 +146,6 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_SDMMC1_SD_Init();
-
-  BSP_SD_Init();
-
-  HAL_Delay(200);
-
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
@@ -184,7 +179,7 @@ int main(void)
 //    {
       /*##-2- Register the file system object to the FatFs module ##############*/
   	  res = f_mount(&SDFatFs, (TCHAR const*)SDPath, 1);
-  	  //HAL_Delay(500);
+  	  HAL_Delay(200);
       if(res != FR_OK)
       {
         /* FatFs Initialization Error */
@@ -213,7 +208,10 @@ int main(void)
           else
           {
             /*##-5- Write data to the text file ################################*/
-            res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+        	  uint8_t sdstate = BSP_SD_GetCardState();
+
+
+            res = f_write(&MyFile, wtext,(UINT) sizeof(wtext), (void *)&byteswritten);
 
             if((byteswritten == 0) || (res != FR_OK))
             {
@@ -483,12 +481,14 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
   hsd1.Init.BusWide = SDMMC_BUS_WIDE_1B;
   hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd1.Init.ClockDiv = 0;
+  hsd1.Init.ClockDiv = 100;
   /* USER CODE BEGIN SDMMC1_Init 2 */
 
   HAL_SD_MspInit(&hsd1);
 
+  //BSP_SD_Init();
 
+  HAL_Delay(200);
 
   __NOP();
 
