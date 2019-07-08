@@ -57,6 +57,8 @@ ETH_HandleTypeDef heth;
 I2C_HandleTypeDef hi2c2;
 
 SD_HandleTypeDef hsd1;
+DMA_HandleTypeDef hdma_sdmmc1_rx;
+DMA_HandleTypeDef hdma_sdmmc1_tx;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
@@ -80,6 +82,7 @@ FIL MyFile;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ETH_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART2_UART_Init(void);
@@ -136,12 +139,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ETH_Init();
   MX_I2C2_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_SDMMC1_SD_Init();
+
+  BSP_SD_Init();
+
+  HAL_Delay(200);
+
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
@@ -185,7 +194,8 @@ int main(void)
       {
         /*##-3- Create a FAT file system (format) on the logical drive #########*/
         /* WARNING: Formatting the uSD card will delete all content on the device */
-    	  res = f_mkfs((TCHAR const*)SDPath, FM_ANY, 0, workBuffer, sizeof(workBuffer));
+    	 // res = f_mkfs((TCHAR const*)SDPath, FM_ANY, 0, workBuffer, sizeof(workBuffer));
+
         if(res != FR_OK)
         {
           /* FatFs Format Error */
@@ -476,61 +486,9 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.ClockDiv = 0;
   /* USER CODE BEGIN SDMMC1_Init 2 */
 
-  /* Enable SDIO clock */
-  __HAL_RCC_SDMMC1_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-
-  //force init gpio
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10| GPIO_PIN_11;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  //
+  HAL_SD_MspInit(&hsd1);
 
 
-  HAL_StatusTypeDef status = HAL_SD_Init(&hsd1);
-  if(status != HAL_OK)
-    {
-  	  Error_Handler();
-    }
-  status = HAL_SD_ConfigWideBusOperation(&hsd1, SDMMC_BUS_WIDE_4B);
-  if (status != HAL_OK)
-      {
-        Error_Handler();
-      }
-  HAL_SD_CardStateTypeDef statusSD = HAL_SD_GetCardState(&hsd1);
-
-  if(statusSD == 0)
-  {
-	  if(HAL_SD_GetError(&hsd1) == HAL_SD_ERROR_CMD_RSP_TIMEOUT)
-	  {
-		  __NOP();
-		  //card not insert
-	  }
-	  Error_Handler();
-  }
-  else
-  {
-	  switch(statusSD)
-	  {
-	  	  case HAL_SD_CARD_TRANSFER:
-	  		  //transfer error
-
-	  		  __NOP();
-	  		  break;
-	  	  case HAL_SD_CARD_READY:
-	  		  //all good
-	  		  __NOP();
-	  		  break;
-	  }
-  }
 
   __NOP();
 
@@ -641,6 +599,24 @@ static void MX_USB_OTG_FS_PCD_Init(void)
   /* USER CODE BEGIN USB_OTG_FS_Init 2 */
 
   /* USER CODE END USB_OTG_FS_Init 2 */
+
+}
+
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+  /* DMA2_Stream6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
 
 }
 
