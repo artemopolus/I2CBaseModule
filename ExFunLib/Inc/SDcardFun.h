@@ -26,11 +26,10 @@ typedef enum {
 }SDcardFileStatus_Typedef;
 
 typedef struct {
-	FATFS SDFatFs;
-	char SDPath[4];
-	uint8_t workBuffer[_MAX_SS];
 	SDcardFileStatus_Typedef status;
 	FIL trgFile;
+	DIR trgDir;
+	FILINFO curFileInfo;
 	SDcardFileStatus_Typedef fileIsOpened;
 }SDcardFile_HandleTypeDef;
 
@@ -44,5 +43,17 @@ SDcardFileStatus_Typedef SDcardOpenFile2read(SDcardFile_HandleTypeDef * scfhtd, 
 SDcardFileStatus_Typedef SDcardWrite2file(SDcardFile_HandleTypeDef * scfhtd, const uint8_t * msg, const UINT msglen, UINT * getmsglen);
 SDcardFileStatus_Typedef SDcardReadFile(SDcardFile_HandleTypeDef * scfhtd, uint8_t * msg, UINT msglen, UINT * getmsglen);
 SDcardFileStatus_Typedef SDcardCloseFile(SDcardFile_HandleTypeDef * scfhtd);
+SDcardFileStatus_Typedef SDcardSelfTest(SDcardFile_HandleTypeDef * scfhtd);
+
+SDcardFileStatus_Typedef SDcardOpenDir(SDcardFile_HandleTypeDef * scfhtd, const TCHAR* path);
+SDcardFileStatus_Typedef SDcardCloseDir(SDcardFile_HandleTypeDef * scfhtd);
+SDcardFileStatus_Typedef SDcardFindFstFilInDir(SDcardFile_HandleTypeDef * scfhtd);
+SDcardFileStatus_Typedef SDcardFindNxtFilInDir(SDcardFile_HandleTypeDef * scfhtd);
+
+SDcardFileStatus_Typedef SDcardGetMountStatus(SDcardFile_HandleTypeDef * scfhtd);
+
+SDcardFileStatus_Typedef SDcardSetMountStatus(SDcardFile_HandleTypeDef * scfhtd);
+
+
 
 #endif /* EXFUNLIB_INC_SDCARDFUN_H_ */
