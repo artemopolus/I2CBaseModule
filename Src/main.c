@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "SDcardFun.h"
+#include "ExSuppFun.h"
 
 /* USER CODE END Includes */
 
@@ -70,6 +71,8 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 #ifdef SD_mode
 SDcardFile_HandleTypeDef sdcfhtd;
+					//01234567890123456789
+uint8_t FileName[] = "data/session0000.txt";
 #endif
 __IO uint8_t TargetI2Cdevice = 0xff;
 __IO uint8_t I2Cflag = 0x00;
@@ -197,6 +200,13 @@ int main(void)
 	  SDcardCloseFile(&sdcfhtd);
 	  if(TargetI2Cdevice != 0xff)
 	  {
+		  //check file names
+		  uint16_t iterator = 0;
+		  while(SDcardTryOpen(&sdcfhtd, FileName) == SDcard_success)
+		  {
+			  iterator++;
+
+		  }
 		  LedSignalOn();
 	  }
 	  __NOP();

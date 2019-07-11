@@ -38,6 +38,7 @@ typedef struct {
 SDcardFileStatus_Typedef SDcardMount(SDcardFile_HandleTypeDef * scfhtd);
 SDcardFileStatus_Typedef GetSDcardStatus(SDcardFile_HandleTypeDef * scfhtd);
 SDcardFileStatus_Typedef SDcardFormat(SDcardFile_HandleTypeDef * scfhtd);
+SDcardFileStatus_Typedef SDcardTryOpen(SDcardFile_HandleTypeDef * scfhtd, const TCHAR * path);
 SDcardFileStatus_Typedef SDcardOpenFile2write(SDcardFile_HandleTypeDef * scfhtd, const TCHAR * path);
 SDcardFileStatus_Typedef SDcardOpenFile2read(SDcardFile_HandleTypeDef * scfhtd, const TCHAR * path);
 SDcardFileStatus_Typedef SDcardWrite2file(SDcardFile_HandleTypeDef * scfhtd, const uint8_t * msg, const UINT msglen, UINT * getmsglen);

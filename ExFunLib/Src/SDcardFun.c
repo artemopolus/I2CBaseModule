@@ -29,6 +29,18 @@ SDcardFileStatus_Typedef SDcardFormat(SDcardFile_HandleTypeDef * scfhtd)
 	if(res == FR_NOT_READY) return SDcard_NotReady;
 	else return SDcard_error;
 }
+SDcardFileStatus_Typedef SDcardTryOpen(SDcardFile_HandleTypeDef * scfhtd, const TCHAR * path)
+{
+	if((scfhtd->fileIsOpened == SDcard_FileOpen2write)||(scfhtd->fileIsOpened == SDcard_FileOpen2read)){
+		SDcardCloseFile(scfhtd);
+	}
+	uint8_t res = f_open(&scfhtd->trgFile, path, FA_CREATE_ALWAYS | FA_WRITE);
+	if( res == FR_OK ) {
+		SDcardCloseFile(scfhtd);
+		return SDcard_success;
+	}
+	else	return SDcard_error;
+}
 SDcardFileStatus_Typedef SDcardOpenFile2write(SDcardFile_HandleTypeDef * scfhtd, const TCHAR * path)
 {
 	if((scfhtd->fileIsOpened == SDcard_FileOpen2write)||(scfhtd->fileIsOpened == SDcard_FileOpen2read)){
