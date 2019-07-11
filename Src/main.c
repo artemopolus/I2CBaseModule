@@ -24,6 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "SDcardFun.h"
 
 /* USER CODE END Includes */
 
@@ -40,7 +41,7 @@
 //#define I2C_mode
 //#define UART_mode
 
-#define SD_mode
+//#define SD_mode
 #define Led_mode
 
 /* USER CODE END PD */
@@ -79,6 +80,14 @@ uint8_t ptI2Cbuffer4receive[I2C_RECEIVE_CNT] = {0};
 //char SDPath[4];
 //uint8_t workBuffer[_MAX_SS];
 //FIL MyFile;
+
+__IO uint8_t flgBtnPress = 0;
+typedef enum{
+	Mode_Start,
+	Mode_Blinked
+}BaseMode_TypeDef;
+__IO uint8_t BaseCurMode = Mode_Start;
+__IO uint32_t BaseDelay = 1000;
 
 /* USER CODE END PV */
 
@@ -219,6 +228,31 @@ int main(void)
 		  HAL_Delay(1000 - time);
 	  }
 #endif
+	  if(flgBtnPress)
+	  {
+		  switch(BaseCurMode)
+		  {
+		  case Mode_Start:
+			  BaseCurMode = Mode_Blinked;
+			  break;
+		  case Mode_Blinked:
+			  BaseCurMode = Mode_Start;
+			  break;
+		  }
+		  flgBtnPress = 0;
+	  }
+	  else
+	  {
+		  switch(BaseCurMode)
+		  {
+		  case Mode_Start:
+			  break;
+		  case Mode_Blinked:
+			  BlinkLed(20);
+			  break;
+		  }
+	  }
+	  HAL_Delay(BaseDelay);
   }
   /* USER CODE END 3 */
 }
@@ -609,6 +643,17 @@ static void LedSignalOn(void)
 	HAL_GPIO_TogglePin(GPIOB, LD1_Pin);
 }
 #endif
+
+void BlinkLed(uint32_t delay)
+{
+	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);
+	HAL_Delay(delay);
+	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);
+}
+void BtnPress_Callback(void)
+{
+	flgBtnPress = 1;
+}
 
 /* USER CODE END 4 */
 

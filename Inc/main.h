@@ -55,6 +55,9 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
+void BtnPress_Callback(void);
+void BlinkLed(uint32_t delay);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
