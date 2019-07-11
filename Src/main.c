@@ -38,10 +38,10 @@
 
 #define I2C_RECEIVE_CNT	(uint16_t)380
 
-//#define I2C_mode
-//#define UART_mode
+#define I2C_mode
+#define UART_mode
 
-//#define SD_mode
+#define SD_mode
 #define Led_mode
 
 /* USER CODE END PD */
@@ -160,14 +160,17 @@ int main(void)
 
   /* здесь происходит опрос портов*/
 #ifdef UART_mode
-  HAL_UART_Transmit(&huart2, (uint8_t*)"Hello", 5, 10);
+  ReportMsg((uint8_t*)"Hello, user!\n");
 #endif
 
 #ifdef I2C_mode
   for (uint16_t i = 0x00; i < 127; i++)
   {
 	  if(HAL_I2C_IsDeviceReady(&hi2c2,(i<<1),1,100) == HAL_OK)
+	  {
 		  TargetI2Cdevice = i;
+		  break;
+	  }
 	  else
 		  __NOP();
   }
@@ -192,6 +195,10 @@ int main(void)
 	  UINT getmsglen;
 	  SDcardWrite2file(&sdcfhtd, (uint8_t*)"hello", (UINT)5, &getmsglen);
 	  SDcardCloseFile(&sdcfhtd);
+	  if(TargetI2Cdevice != 0xff)
+	  {
+		  LedSignalOn();
+	  }
 	  __NOP();
   }
   __NOP();
@@ -638,9 +645,7 @@ static void UartsendMessage(uint8_t * msg, uint16_t cnt)
 #ifdef Led_mode
 static void LedSignalOn(void)
 {
-	HAL_GPIO_TogglePin(GPIOB, LD1_Pin);
-	HAL_Delay(1000);
-	HAL_GPIO_TogglePin(GPIOB, LD1_Pin);
+	HAL_GPIO_WritePin(GPIOB, LD1_Pin,GPIO_PIN_SET);
 }
 #endif
 
@@ -653,6 +658,26 @@ void BlinkLed(uint32_t delay)
 void BtnPress_Callback(void)
 {
 	flgBtnPress = 1;
+}
+void ReportMsg(uint8_t * msg)
+{
+	uint16_t count = 0;
+	while(*msg++ != '\0') count++;
+#ifdef UART_mode
+	HAL_UART_Transmit(&huart2, msg, count, 10);
+#endif
+
+#ifdef SD_mode
+	if(sdcfhtd.fileIsOpened == SDcard_FileOpen2write)
+	{
+		UINT getmsglen = 0;
+		SDcardWrite2file(&sdcfhtd, msg, count, &getmsglen);
+		if(count != getmsglen)
+		{
+			//some error
+		}
+	}
+#endif
 }
 
 /* USER CODE END 4 */
