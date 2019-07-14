@@ -71,13 +71,21 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 #ifdef SD_mode
 SDcardFile_HandleTypeDef sdcfhtd;
-					//01234567890123456789
-uint8_t FileName[] = "data/session0000.txt";
+				  //01234567890123456789
+
+
 #endif
+				  //0123456789012345678
+TCHAR FileName[] = "data/session0000.txt";
+uint8_t BufferTMP[10];
+
 __IO uint8_t TargetI2Cdevice = 0xff;
 __IO uint8_t I2Cflag = 0x00;
 uint8_t ptI2Cbuffer2transmit[] = {0,2,0,0};
 uint8_t ptI2Cbuffer4receive[I2C_RECEIVE_CNT] = {0};
+
+
+
 
 //FATFS SDFatFs = {0};
 //char SDPath[4];
@@ -90,7 +98,11 @@ typedef enum{
 	Mode_Blinked
 }BaseMode_TypeDef;
 __IO uint8_t BaseCurMode = Mode_Start;
-__IO uint32_t BaseDelay = 1000;
+
+__IO uint8_t MaxCountDelayPerOneBlink = 100;
+__IO uint8_t CountDPB = 0;
+__IO uint32_t BaseDelay = 10;
+
 
 /* USER CODE END PV */
 
@@ -161,6 +173,7 @@ int main(void)
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
+
   /* здесь происходит опрос портов*/
 #ifdef UART_mode
   ReportMsg((uint8_t*)"Hello, user!\n");
@@ -204,9 +217,11 @@ int main(void)
 		  uint16_t iterator = 0;
 		  while(SDcardTryOpen(&sdcfhtd, FileName) == SDcard_success)
 		  {
-			  iterator++;
-
+			  uint8_t order = Dec_Convert(BufferTMP,(int)iterator++);
+			  for(uint8_t i = 0; i < order; i++)	FileName[16 - order + i] = BufferTMP[10 - order + i];
 		  }
+		  SDcardOpenFile2write(&sdcfhtd, FileName);
+		  SDcardCloseFile(&sdcfhtd);
 		  LedSignalOn();
 	  }
 	  __NOP();
@@ -265,7 +280,20 @@ int main(void)
 		  case Mode_Start:
 			  break;
 		  case Mode_Blinked:
-			  BlinkLed(20);
+			  if(CountDPB == MaxCountDelayPerOneBlink)
+			  {
+				  LedTurn(0);
+				  CountDPB = 0;
+			  }
+			  else if(CountDPB == (MaxCountDelayPerOneBlink - 1))
+			  {
+				  LedTurn(1);
+				  CountDPB++;
+			  }
+			  else
+			  {
+				  CountDPB++;
+			  }
 			  break;
 		  }
 	  }
@@ -664,6 +692,11 @@ void BlinkLed(uint32_t delay)
 	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);
 	HAL_Delay(delay);
 	HAL_GPIO_TogglePin(GPIOB, LD2_Pin);
+}
+void LedTurn(uint8_t mode)
+{
+	if(mode)	HAL_GPIO_WritePin(GPIOB, 	LD2_Pin,	GPIO_PIN_SET);
+	else		HAL_GPIO_WritePin(GPIOB, 	LD2_Pin,	GPIO_PIN_RESET);
 }
 void BtnPress_Callback(void)
 {

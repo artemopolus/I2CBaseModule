@@ -11,7 +11,9 @@
 #define FALSE 0
 #define TRUE !FALSE
 
-static inline uint8_t* Dec_Convert(uint8_t* buf, uint32_t value) {
+static inline uint8_t Dec_Convert(uint8_t* buf, int value)
+{
+	uint8_t highdigitorder = 0;
                 //0123456789
 	int divider = 1000000000;
 	unsigned char bNZflag=FALSE, minus=FALSE;		//  Флаги левых нулей и минуса
@@ -31,6 +33,7 @@ static inline uint8_t* Dec_Convert(uint8_t* buf, uint32_t value) {
 		  	}
 			value %= divider;
 			*buf++ = current_digit + '0';
+			highdigitorder++;
 			bNZflag = TRUE;				// это значит, что левые нули закончились
 		} else {  			//  Вместо левых нулей - пробелы, чтобы выровнять вправо
 		    *buf++ = ' ';
@@ -38,9 +41,12 @@ static inline uint8_t* Dec_Convert(uint8_t* buf, uint32_t value) {
 		divider /= 10;
     }
 	if (!bNZflag)
+	{
 		*buf++ = '0';
+		highdigitorder++;
+	}
 	*buf = 0;				//  Это нуль-терминатор (признак окончания строки)
-  return buf;
+  return highdigitorder;
 }
 
 

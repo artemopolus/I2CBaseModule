@@ -57,6 +57,7 @@ void Error_Handler(void);
 
 void BtnPress_Callback(void);
 void BlinkLed(uint32_t delay);
+void LedTurn(uint8_t mode);
 void ReportMsg(uint8_t * msg);
 
 /* USER CODE END EFP */
