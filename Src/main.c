@@ -76,7 +76,7 @@ SDcardFile_HandleTypeDef sdcfhtd;
 
 #endif
 				  //0123456789012345678
-TCHAR FileName[] = "data/session0000.txt";
+TCHAR FileName[] = "dtss/ss0000.txt";
 uint8_t BufferTMP[10];
 
 __IO uint8_t TargetI2Cdevice = 0xff;
@@ -206,21 +206,24 @@ int main(void)
 #ifdef Led_mode
 	  LedSignalOn();
 #endif
-	  SDcardOpenDir(&sdcfhtd, "data");
-	  SDcardOpenFile2write(&sdcfhtd, "data/newfile.txt");
+//	  SDcardOpenDir(&sdcfhtd, "data");
+//	  SDcardOpenFile2write(&sdcfhtd, "data/newfile2.txt");
 	  UINT getmsglen;
-	  SDcardWrite2file(&sdcfhtd, (uint8_t*)"hello", (UINT)5, &getmsglen);
-	  SDcardCloseFile(&sdcfhtd);
+//	  SDcardWrite2file(&sdcfhtd, (uint8_t*)"hello", (UINT)5, &getmsglen);
+//	  SDcardCloseFile(&sdcfhtd);
 	  if(TargetI2Cdevice != 0xff)
 	  {
 		  //check file names
-		  uint16_t iterator = 0;
+		  uint16_t iterator = 1;
+		  SDcardOpenDir(&sdcfhtd, "dtss");
 		  while(SDcardTryOpen(&sdcfhtd, FileName) == SDcard_success)
 		  {
-			  uint8_t order = Dec_Convert(BufferTMP,(int)iterator++);
-			  for(uint8_t i = 0; i < order; i++)	FileName[16 - order + i] = BufferTMP[10 - order + i];
+			  uint8_t order = Dec_Convert(&BufferTMP[0],(int)iterator++);
+			  for(uint8_t i = 0; i < order; i++)	FileName[11 - order + i] = BufferTMP[10 - order + i];
 		  }
+//		  TCHAR trgpath_tmp[] = "dtss/ss0000.txt";
 		  SDcardOpenFile2write(&sdcfhtd, FileName);
+		  SDcardWrite2file(&sdcfhtd, (uint8_t*)"new session\n", (UINT)sizeof("new session\n"), &getmsglen);
 		  SDcardCloseFile(&sdcfhtd);
 		  LedSignalOn();
 	  }

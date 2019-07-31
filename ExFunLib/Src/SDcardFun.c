@@ -34,9 +34,9 @@ SDcardFileStatus_Typedef SDcardTryOpen(SDcardFile_HandleTypeDef * scfhtd, const 
 	if((scfhtd->fileIsOpened == SDcard_FileOpen2write)||(scfhtd->fileIsOpened == SDcard_FileOpen2read)){
 		SDcardCloseFile(scfhtd);
 	}
-	uint8_t res = f_open(&scfhtd->trgFile, path, FA_CREATE_ALWAYS | FA_WRITE);
+	uint8_t res = f_open(&scfhtd->trgFile, path, FA_OPEN_EXISTING | FA_WRITE);
+	f_close(&scfhtd->trgFile);
 	if( res == FR_OK ) {
-		SDcardCloseFile(scfhtd);
 		return SDcard_success;
 	}
 	else	return SDcard_error;
