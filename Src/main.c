@@ -37,7 +37,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define I2C_RECEIVE_CNT	(uint16_t)380
+
 
 #define I2C_mode
 #define UART_mode
@@ -49,6 +49,11 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
+#define DELAY_100HZ	10
+#define DELAY_1HZ	1000
+#define I2C_RECEIVE_CNT	(uint16_t)380
+#define I2C_RECEIVE_TMT	10
 
 /* USER CODE END PM */
 
@@ -101,7 +106,7 @@ __IO uint8_t BaseCurMode = Mode_Start;
 
 __IO uint8_t MaxCountDelayPerOneBlink = 100;
 __IO uint8_t CountDPB = 0;
-__IO uint32_t BaseDelay = 10;
+__IO uint32_t BaseDelay = DELAY_100HZ;
 
 
 /* USER CODE END PV */
@@ -139,7 +144,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 #ifdef SD_mode
-
+	UINT I2CgetDTcnt;
 #endif
 
   /* USER CODE END 1 */
@@ -180,12 +185,13 @@ int main(void)
 #endif
 
 #ifdef I2C_mode
-  for (uint16_t i = 0x00; i < 127; i++)
+  uint16_t possibleIndex;
+  for ( possibleIndex = 0x01; possibleIndex < 127; possibleIndex++)
   {
-	  if(HAL_I2C_IsDeviceReady(&hi2c2,(i<<1),1,100) == HAL_OK)
+	  if(HAL_I2C_IsDeviceReady(&hi2c2,(possibleIndex<<1),1,100) == HAL_OK)
 	  {
-		  TargetI2Cdevice = i;
-		  break;
+		  TargetI2Cdevice = possibleIndex;
+//		  break;
 	  }
 	  else
 		  __NOP();
@@ -195,7 +201,7 @@ int main(void)
 	  UartsendMessage((uint8_t*)"Get trg\n", 8);
 	  HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10);
 
-	  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, 10);
+	  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
 	  __NOP();
   }
 #endif
@@ -203,11 +209,13 @@ int main(void)
 #ifdef SD_mode
   if(SDcardSelfTest(&sdcfhtd) == SDcard_success)
   {
+
 #ifdef Led_mode
 	  LedSignalOn();
 #endif
 //	  SDcardOpenDir(&sdcfhtd, "data");
 //	  SDcardOpenFile2write(&sdcfhtd, "data/newfile2.txt");
+
 	  UINT getmsglen;
 //	  SDcardWrite2file(&sdcfhtd, (uint8_t*)"hello", (UINT)5, &getmsglen);
 //	  SDcardCloseFile(&sdcfhtd);
@@ -269,9 +277,17 @@ int main(void)
 		  {
 		  case Mode_Start:
 			  BaseCurMode = Mode_Blinked;
+#ifdef SD_mode
+			  if(SDcardIsFileOpened(&sdcfhtd) != SDcard_FileOpen2write)
+				  SDcardOpenFile2write(&sdcfhtd, FileName);
+#endif
 			  break;
 		  case Mode_Blinked:
 			  BaseCurMode = Mode_Start;
+#ifdef SD_mode
+			  if(SDcardIsFileOpened(&sdcfhtd) == SDcard_FileOpen2write)
+				  SDcardCloseFile(&sdcfhtd);
+#endif
 			  break;
 		  }
 		  flgBtnPress = 0;
@@ -283,6 +299,12 @@ int main(void)
 		  case Mode_Start:
 			  break;
 		  case Mode_Blinked:
+#ifdef I2C_mode
+			  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
+#endif
+#ifdef SD_mode
+			  SDcardWrite2file(&sdcfhtd, ptI2Cbuffer4receive, I2C_RECEIVE_CNT, &I2CgetDTcnt);
+#endif
 			  if(CountDPB == MaxCountDelayPerOneBlink)
 			  {
 				  LedTurn(0);

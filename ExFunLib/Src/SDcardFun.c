@@ -36,6 +36,7 @@ SDcardFileStatus_Typedef SDcardTryOpen(SDcardFile_HandleTypeDef * scfhtd, const 
 	}
 	uint8_t res = f_open(&scfhtd->trgFile, path, FA_OPEN_EXISTING | FA_WRITE);
 	f_close(&scfhtd->trgFile);
+
 	if( res == FR_OK ) {
 		return SDcard_success;
 	}

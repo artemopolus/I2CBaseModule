@@ -55,6 +55,11 @@ SDcardFileStatus_Typedef SDcardGetMountStatus(SDcardFile_HandleTypeDef * scfhtd)
 
 SDcardFileStatus_Typedef SDcardSetMountStatus(SDcardFile_HandleTypeDef * scfhtd);
 
+static inline SDcardFileStatus_Typedef SDcardIsFileOpened(SDcardFile_HandleTypeDef * scfhtd)
+{
+	return scfhtd->fileIsOpened;
+}
+
 
 
 #endif /* EXFUNLIB_INC_SDCARDFUN_H_ */
