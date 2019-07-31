@@ -247,8 +247,9 @@ int main(void)
 #ifdef I2C_mode
   if(TargetI2Cdevice != 0xff)
   {
-	  ptI2Cbuffer2transmit[3] = 0x01;
-	  if(HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10) == HAL_OK)
+	  //ptI2Cbuffer2transmit[3] = 0x01;
+	  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
+	  if(HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 100) == HAL_OK)
 	  {
 		  I2Cflag = 0x01;
 		  UartsendMessage((uint8_t*)"Set str\n", 8);
