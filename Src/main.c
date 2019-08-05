@@ -199,33 +199,7 @@ int main(void)
   if(TargetI2Cdevice != 0xff)
   {
 	  UartsendMessage((uint8_t*)"Get trg\n", 8);
-	  uint8_t i = 0;
-	  while(i++ < 11)
-	  {
-		  //HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
-		  //HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10);
-		  HAL_Delay(1000);
-		  //if(ptI2Cbuffer2transmit[3])
-		  		  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
 
-		  //ptI2Cbuffer2transmit[3] = ptI2Cbuffer2transmit[3]? 0 : 1;
-//		  HAL_Delay(1000);
-//		  if(ptI2Cbuffer2transmit[3])
-//		  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
-//		  HAL_Delay(1000);
-	  }
-
-//	  HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10);
-//	  HAL_Delay(100);
-//	  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
-//	  HAL_Delay(100);
-//	  HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10);
-//
-//	  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
-//	  HAL_Delay(100);
-//	  HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10);
-//	  HAL_Delay(100);
-//	  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
 
 	  __NOP();
   }
@@ -257,6 +231,24 @@ int main(void)
 //		  TCHAR trgpath_tmp[] = "dtss/ss0000.txt";
 		  SDcardOpenFile2write(&sdcfhtd, FileName);
 		  SDcardWrite2file(&sdcfhtd, (uint8_t*)"new session\n", (UINT)sizeof("new session\n"), &getmsglen);
+
+		  uint8_t i = 0;
+		  while(i++ < 1)
+		  {
+			  ptI2Cbuffer2transmit[3] = 4;
+			  HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10);
+			  HAL_Delay(100);
+			  uint8_t j = 0;
+			  while(j++ < 10)
+			  {
+					  HAL_I2C_Master_Receive(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer4receive, I2C_RECEIVE_CNT, I2C_RECEIVE_TMT);
+					HAL_Delay(10);
+			  }
+			  HAL_Delay(100);
+			  ptI2Cbuffer2transmit[3] = 0;
+			  HAL_I2C_Master_Transmit(&hi2c2, (TargetI2Cdevice<<1), ptI2Cbuffer2transmit, 4, 10);
+		  }
+
 		  SDcardCloseFile(&sdcfhtd);
 		  LedSignalOn();
 	  }
